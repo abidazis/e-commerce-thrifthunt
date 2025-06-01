@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.navbar.navbar-expand-lg {
+    max-width: 992px;
+    margin: auto;
+    padding: 10px 20px;
+}
+.navbar .navbar-nav .nav-link {
+    margin: 0 10px
+}
+
+.carousel-caption {
+    position: absolute;
+    right: 15%;
+    bottom: 0;
+    top: 0;
+    margin: auto 0;
+    left: 15%;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    color: #fff;
+    max-width: 550px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+}
+
+.text-shadow {
+    text-shadow: 3px 1px 9px rgba(0,0,0,0.4);
+}
+
+* {
+    font-family: "Kanit", sans-serif;
+}
+
+.link-category a {
+    background-color: #eee;
+    padding: 10px 20px;
+    border-radius: 100px;
+    margin: 0 5px;
+    text-decoration: none;
+    color: #555;
+    transition: .3s;
+}
+
+.link-category a:hover {
+    background-color: #e0e0e0;
+}
+
+.sec-header {
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+}
+.sec-header h1 {
+    text-align: center;
+}
+
+.page img {
+    max-width: 100%;
+    height: auto;
+}
+
+.product-image {
+            max-height: 450px;
+            object-fit: cover;
+        }
+
+pre {
+    background-color: #eee;
+    border: 2px solid #aaa;
+    padding: 20px;
+}
+
+@media (max-width: 991.98px) {
+    .sec-header {
+        height: 300px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .sec-header {
+        height: 200px;
+    }
+}
