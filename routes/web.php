@@ -9,11 +9,13 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CheckoutController;
+
+Auth::routes();
 
 Route::middleware('auth')->group(function () {
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
@@ -23,6 +25,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 });
+
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/register/penjual', [RegisterController::class, 'showPenjualForm']);
 Route::post('/register/penjual', [RegisterController::class, 'registerPenjual']);
@@ -55,3 +61,5 @@ Route::get('/product/{product:id}', function (product $product) {
     $categories = category::all();
     return view('detail_product',compact('appname','menu','submenu','categories','product'));
 });
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
