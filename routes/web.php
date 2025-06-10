@@ -14,6 +14,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ProductController;
 
 Auth::routes();
 
@@ -21,15 +22,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/order', [OrderController::class, 'store'])->name('order.store');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::get('/admin/order/{order}/invoice', [OrderController::class, 'invoice'])->name('admin.invoice');
+    Route::get('/admin/order/{order}/invoice-pdf', [App\Http\Controllers\OrderController::class, 'invoicePdf'])->name('admin.invoice.pdf');
+
 });
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-
+Route::get('/search', [ProductController::class, 'search'])->name('products.search');
 Route::get('/register/penjual', [RegisterController::class, 'showPenjualForm']);
 Route::post('/register/penjual', [RegisterController::class, 'registerPenjual']);
 

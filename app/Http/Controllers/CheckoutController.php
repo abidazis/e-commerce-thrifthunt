@@ -11,32 +11,46 @@ use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
-    
-
     public function process(Request $request)
     {
+        logger('--- MULAI CHECKOUT ---');
+        logger($request->all());
+
         $request->validate([
-            'shipping_address' => 'required',
-            'shipping_method' => 'required',
-            'payment_method' => 'required',
+            'shipping_address' => 'required|string|max:500',
+            'shipping_method' => 'required|string',
+            'payment_method' => 'required|string',
         ]);
 
         DB::beginTransaction();
 
         try {
             $user = auth()->user();
+
             $carts = Cart::with('product')->where('user_id', $user->id)->get();
 
+            if ($carts->isEmpty()) {
+                return back()->with('error', 'Keranjang kamu kosong.');
+            }
+
             foreach ($carts as $cart) {
+                $product = $cart->product;
+
+                if (!$product) {
+                    continue; // skip jika produk sudah tidak tersedia
+                }
+
                 Order::create([
                     'user_id' => $user->id,
-                    'product_id' => $cart->product_id,
+                    'product_id' => $product->id,
                     'quantity' => $cart->quantity,
                     'status' => 'pending',
                     'shipping_address' => $request->shipping_address,
                     'shipping_method' => $request->shipping_method,
                     'payment_method' => $request->payment_method,
                 ]);
+
+                logger('Sukses menyimpan order untuk product ID: ' . $product->id);
             }
 
             Cart::where('user_id', $user->id)->delete(); // kosongkan keranjang
@@ -44,7 +58,8 @@ class CheckoutController extends Controller
 
             return redirect('/')->with('success', 'Pesanan kamu berhasil dikirim!');
         } catch (\Exception $e) {
-            DB::rollback();
+            DB::rollBack();
+            logger('ERROR CHECKOUT: ' . $e->getMessage());
             return back()->with('error', 'Gagal memproses pesanan. Silakan coba lagi.');
         }
     }

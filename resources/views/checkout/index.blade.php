@@ -33,16 +33,31 @@
         </div>
 
         <h5>Ringkasan Produk</h5>
-        <ul class="list-group mb-3">
-            @foreach ($items as $item)
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ $item->product->title }}
-                    <span>Rp {{ number_format($item->product->saleprice) }}</span>
-                </li>
-            @endforeach
-        </ul>
+            @php $total = 0; @endphp
+            <ul class="list-group mb-3">
+                @foreach ($items as $item)
+                    @php $subtotal = $item->product->saleprice * $item->quantity; $total += $subtotal; @endphp
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ $item->product->title }} (x{{ $item->quantity }})
+                        <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                    </li>
+                @endforeach
+            </ul>
+
+            <h5>Total: <strong>Rp {{ number_format($total, 0, ',', '.') }}</strong></h5>
+
 
         <button type="submit" class="btn btn-primary">Konfirmasi Pesanan</button>
     </form>
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
 </div>
 </x-layout>

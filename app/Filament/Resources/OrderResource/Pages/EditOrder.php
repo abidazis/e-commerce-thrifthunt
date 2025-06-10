@@ -16,4 +16,10 @@ class EditOrder extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function resolveRecord(int|string $key): \Illuminate\Database\Eloquent\Model
+    {
+        // ⬅️ Ini yang penting!
+        return $this->getModel()::with(['user', 'product'])->findOrFail($key);
+    }
 }
