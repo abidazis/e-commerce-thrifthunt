@@ -21,7 +21,8 @@ class PageResource extends Resource
     protected static ?string $navigationLabel = 'Pages';
     protected static ?string $navigationGroup = 'Landing Page';
     protected static ?string $navigationIcon = 'heroicon-o-window';
-
+    protected static bool $shouldRegisterNavigation = false;
+     
     public static function form(Form $form): Form
     {
         return $form
