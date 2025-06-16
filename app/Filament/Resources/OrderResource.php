@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -27,75 +29,103 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-
-
     public static function form(Form $form): Form
     {
         return $form->schema([
             Group::make([
                 Section::make('Informasi Pembeli')->schema([
-                    TextInput::make('nama_pembeli')
+                    TextInput::make('user.name')
                         ->label('Nama Pembeli')
-                        ->default(function ($record) {
-                            logger('DEBUG:: Record User:', [$record->user]);
-                            return $record->user?->name ?? 'user null';
-                        })
                         ->disabled(),
-
                     TextInput::make('payment_method')
                         ->label('Metode Pembayaran')
                         ->default(fn ($record) => $record->payment_method ?? '-')
                         ->disabled(),
-
                     Textarea::make('shipping_address')
                         ->label('Alamat Pengiriman')
                         ->default(fn ($record) => $record->shipping_address ?? '-')
                         ->disabled(),
-                ]),
-
-                Section::make('Detail Produk')->schema([
-                    TextInput::make('nama_produk')
-                        ->label('Nama Produk')
-                        ->default(fn ($record) => $record->product?->title ?? '-')
+                    TextInput::make('shipping_method')
+                        ->label('Metode Pengiriman')
+                        ->default(fn ($record) => $record->shipping_method ?? '-')
                         ->disabled(),
+                ])->columns(2),
 
-                    TextInput::make('quantity')
-                        ->label('Jumlah')
+                Section::make('Detail Produk Pesanan')->schema([
+                    Textarea::make('product_details')
+                        ->label('Detail Produk')
+                        ->default(function ($record) {
+                            $details = '';
+                            if ($record && $record->items) {
+                                foreach ($record->items as $item) {
+                                    $productTitle = $item->product->title ?? 'Produk Tidak Ditemukan';
+                                    $price = number_format($item->price_at_purchase, 0, ',', '.');
+                                    $subtotal = number_format($item->price_at_purchase * $item->quantity, 0, ',', '.');
+                                    $details .= "- {$productTitle} (x{$item->quantity}) @ Rp{$price} = Rp{$subtotal}\n";
+                                }
+                            }
+                            return $details ?: '-';
+                        })
+                        ->disabled()
+                        ->rows(5)
+                        ->columnSpanFull(),
+                ])->columns(1),
+
+                Section::make('Ringkasan & Status')->schema([
+                    TextInput::make('order_number')
+                        ->label('Nomor Pesanan')
                         ->disabled(),
-
-                    TextInput::make('total')
-                        ->label('Total Harga')
-                        ->default(fn ($record) => 
-                            $record->product && $record->quantity
-                                ? 'Rp ' . number_format($record->product->saleprice * $record->quantity, 0, ',', '.')
-                                : '-'
-                        )
+                    TextInput::make('total_amount')
+                        ->label('Total Harga Pesanan')
+                        ->default(fn ($record) => 'Rp ' . number_format($record->total_amount, 0, ',', '.'))
                         ->disabled(),
-                ]),
-
-                Section::make('Status')->schema([
                     Select::make('status')
+                        ->label('Status Order')
                         ->options([
                             'pending' => 'Pending',
                             'diproses' => 'Diproses',
                             'dikirim' => 'Dikirim',
                             'selesai' => 'Selesai',
+                            'dibatalkan' => 'Dibatalkan',
+                            'kadaluarsa' => 'Kadaluarsa',
                         ])
                         ->native(false)
-                        ->required(),
-                ]),
-            ]),
+                        ->required()
+                        ->columnSpanFull(),
+                ])->columns(2),
+            ])->columns(2),
         ]);
     }
-
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('product.title')->label('Produk'),
-                TextColumn::make('user.name')->label('Pembeli'),
-                TextColumn::make('quantity')->label('Jumlah')->sortable(),
+                // TextColumn::make('order_number')->label('No. Pesanan')->searchable()->sortable(), // <--- DIKOMENTARI/DIHAPUS
+                TextColumn::make('user.name')
+                    ->label('Pembeli')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('product_summary')
+                    ->label('Produk')
+                    ->formatStateUsing(function (Order $record) {
+                        if ($record->items->isEmpty()) {
+                            return 'Tidak ada produk';
+                        }
+                        return $record->items->map(function ($item) {
+                            return ($item->product->title ?? 'Produk Tidak Ditemukan') . ' (x' . $item->quantity . ')';
+                        })->implode(', ');
+                    })
+                    ->limit(50)
+                    ->tooltip(function (Order $record) {
+                        return $record->items->map(function ($item) {
+                            return ($item->product->title ?? 'Produk Tidak Ditemukan') . ' (x' . $item->quantity . ')';
+                        })->implode("\n");
+                    }),
+                TextColumn::make('total_amount')
+                    ->label('Total Harga')
+                    ->money('IDR')
+                    ->sortable(),
                 SelectColumn::make('status')
                     ->label('Status')
                     ->options([
@@ -103,18 +133,14 @@ class OrderResource extends Resource
                         'diproses' => 'Diproses',
                         'dikirim' => 'Dikirim',
                         'selesai' => 'Selesai',
+                        'dibatalkan' => 'Dibatalkan',
+                        'kadaluarsa' => 'Kadaluarsa',
                     ])
                     ->sortable(),
-
-                TextColumn::make('created_at')->date()->label('Tanggal'),
-            ])
-            ->actions([
-                Tables\Actions\Action::make('invoice_pdf')
-                    ->label('Export PDF')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->url(fn ($record) => route('admin.invoice.pdf', $record))
-                    ->openUrlInNewTab(),
-
+                TextColumn::make('created_at')
+                    ->label('Tanggal Pesan')
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -124,31 +150,45 @@ class OrderResource extends Resource
                         'diproses' => 'Diproses',
                         'dikirim' => 'Dikirim',
                         'selesai' => 'Selesai',
-                    ])
+                        'dibatalkan' => 'Dibatalkan',
+                        'kadaluarsa' => 'Kadaluarsa',
+                    ]),
+            ])
+            ->actions([
+                // Tables\Actions\EditAction::make(), // <--- DIKOMENTARI/DIHAPUS
+                Tables\Actions\Action::make('packing_slip_pdf') // <--- NAMA BARU UNTUK ACTION PACKING SLIP
+                    ->label('Cetak Packing Slip') // Label baru
+                    ->icon('heroicon-o-printer') // Ikon printer
+                    ->url(fn (Order $record) => route('admin.packing_slip.pdf', $record)) // <--- ROUTE BARU
+                    ->openUrlInNewTab(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListOrders::route('/'),
+            // Hapus 'create' dan 'edit' jika admin hanya mengedit status dari tabel dan tidak ada form detail terpisah
+            // 'create' => Pages\CreateOrder::route('/create'),
+            // 'edit' => Pages\EditOrder::route('/{record}/edit'),
+        ];
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['user', 'product']); // ⬅️ ini wajib agar relasi tersedia di $record
+            ->with(['user', 'items.product']);
     }
-    public static function getNavigationUrl(): string
-    {
-        return route('filament.admin.resources.orders.index');
-    }
-    protected static ?string $slug = 'orders';
-    protected static ?string $modelLabel = 'Order';
-    public static function getRouteName(): string
-    {
-        return 'filament.resources.orders';
-    }
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListOrders::route('/'),
-        ];
-    }
-
-
 }

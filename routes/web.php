@@ -125,10 +125,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/my-orders/{order}', 'customerShow')->name('orders.customer_show'); // Menggunakan {order} untuk Route Model Binding
         Route::get('/my-orders/{order}/invoice-pdf', 'invoicePdf')->name('orders.invoice_pdf'); // Untuk pembeli download invoice
 
-        // Rute untuk Admin/Penjual (Opsional, tambahkan middleware role jika ada)
-        // Route::middleware('can:manage-orders')->group(function () { // Contoh, jika ada permission/role
-            Route::get('/admin/orders/{order}/invoice', 'invoice')->name('admin.invoice');
-            Route::get('/admin/orders/{order}/invoice-pdf-admin', 'invoicePdf')->name('admin.invoice.pdf_admin'); // Ganti nama untuk admin-specific PDF
+        // Rute untuk Admin/Penjual
+        Route::get('/admin/orders/{order}/invoice', 'invoice')->name('admin.invoice'); // Invoice admin (HTML)
+        Route::get('/admin/orders/{order}/invoice-pdf-admin', 'invoicePdf')->name('admin.invoice.pdf_admin'); // Invoice admin (PDF)
+
+        // Rute BARU untuk Packing Slip PDF
+        Route::get('/admin/orders/{order}/packing-slip-pdf', 'packingSlipPdf')->name('admin.packing_slip.pdf'); // <--- ROUTE BARU
         // });
     });
 

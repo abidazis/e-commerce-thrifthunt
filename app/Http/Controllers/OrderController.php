@@ -116,4 +116,18 @@ class OrderController extends Controller
         $pdf = Pdf::loadView('admin.invoice-pdf', compact('order'));
         return $pdf->download('invoice-'.$order->order_number.'.pdf'); // Gunakan order_number untuk nama file
     }
+    
+        // Metode baru untuk Packing Slip PDF
+    public function packingSlipPdf(Order $order)
+    {
+        // Pastikan hanya admin/penjual yang bisa download packing slip
+        if (!Auth::check() || (Auth::user()->role !== 'admin' && Auth::user()->role !== 'penjual')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $order->load(['user', 'items.product']); // Muat relasi user dan item produk
+
+        $pdf = Pdf::loadView('admin.packing-slip-pdf', compact('order')); // Menggunakan view baru
+        return $pdf->download('packing-slip-'.$order->order_number.'.pdf'); // Nama file PDF
+    }
 }

@@ -33,7 +33,14 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+        public function canAccessFilament(): bool
+    {
+        // Izinkan akses jika role adalah 'admin' atau 'penjual'
+        return $this->role === 'admin' || $this->role === 'penjual';
 
+        // Atau, jika Anda hanya ingin admin yang bisa akses
+        // return $this->role === 'admin';
+    }
     /**
      * Get the attributes that should be cast.
      *
