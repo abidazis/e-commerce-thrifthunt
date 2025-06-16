@@ -6,7 +6,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             {{-- Form Pencarian Produk --}}
-            <form class="d-flex my-2 my-lg-0 mx-auto w-50" action="{{ route('products.search') }}" method="GET"> {{-- Tambahkan w-50 untuk lebar 50% --}}
+            <form class="d-flex my-2 my-lg-0 mx-auto w-50" action="{{ route('products.search') }}" method="GET">
                 <div class="input-group">
                     <input class="form-control border-end-0 border rounded-pill" type="search" placeholder="Cari produk..." aria-label="Search" name="query" value="{{ request('query') }}">
                     <span class="input-group-append">
@@ -19,25 +19,28 @@
 
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
                 <li class="nav-item">
-                    {{-- Arahkan ke id carousel --}}
                     <a class="nav-link" aria-current="page" href="/#carouselExampleCaptions">Home</a>
                 </li>
 
-                {{-- Menu Pages sebelumnya, sekarang jadi Produk --}}
                 <li class="nav-item">
-                    {{-- Arahkan ke id bagian produk --}}
                     <a class="nav-link" href="/#our-products-section">Produk</a>
                 </li>
 
-                {{-- Hapus loop @foreach($menu as $mn) dan dropdown pages yang lama jika tidak lagi diperlukan --}}
-                {{-- Jika kamu masih ingin menampilkan menu dari database, kamu perlu menyesuaikan logikanya --}}
-                {{-- Misalnya, memindahkan "Pages" ke bagian "Produk" jika itu maksudnya, atau menambahkannya lagi secara terpisah --}}
-
                 @auth
                 <li class="nav-item me-3">
-                    <a class="nav-link" href="{{ route('cart.index') }}">
+                    <a class="nav-link position-relative" href="{{ route('cart.index') }}">
                         <i class="bi bi-cart-fill fs-5"></i>
-                        {{-- <span class="badge bg-danger rounded-pill">3</span> --}}
+                        @php
+                            // Pastikan model Cart di-import atau gunakan full namespace
+                            // \App\Models\Cart
+                            $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count();
+                        @endphp
+                        @if($cartCount > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ $cartCount }}
+                                <span class="visually-hidden">item in cart</span>
+                            </span>
+                        @endif
                     </a>
                 </li>
                 @endauth
@@ -50,6 +53,9 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                         <li><a class="dropdown-item" href="#">Profil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {{-- Pastikan baris ini sudah ada dan tidak terhapus atau salah ketik --}}
+                        <li><a class="dropdown-item" href="{{ route('orders.customer_index') }}">Pesanan Saya</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">

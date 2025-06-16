@@ -30,6 +30,18 @@ class ProductController extends Controller
 
         return view('products.search_results', compact('products', 'query', 'menu', 'submenu', 'categories', 'appname'));
     }
+        public function show($id)
+    {
+        $product = Product::findOrFail($id);
+
+        // Ambil data untuk layout
+        $menu = Page::where(['is_group'=>0,'is_active'=>1])->get();
+        $submenu = Page::where(['is_group'=>1,'is_active'=>1])->get();
+        $categories = Category::all();
+        $appname = config('app.name');
+
+        return view('products.show', compact('product', 'menu', 'submenu', 'categories', 'appname'));
+    }
 
     // ... (metode-metode lain)
 }
