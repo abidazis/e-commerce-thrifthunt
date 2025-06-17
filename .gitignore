@@ -2,7 +2,7 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage # Ini mengabaikan symlink di public. Ini TIDAK MASALAH.
+/public/storage
 
 # Aturan umum untuk mengabaikan konten folder storage/
 /storage/*
@@ -13,7 +13,7 @@
 /storage/app/* # <--- Abaikan semua isi dalam storage/app (baru)
 !/storage/app/public/               # <--- Izinkan folder public di dalam storage/app (baru)
 /storage/app/public/* # <--- Abaikan semua isi dalam storage/app/public (baru)
-!/storage/app/public/.gitkeep       # <--- IZINKAN FILE .gitkeep di dalam storage/app/public (ini yang penting)
+!/storage/app/public/.gitkeep       # <--- PENTING: IZINKAN FILE .gitkeep di dalam storage/app/public (ini yang penting)
 
 # Default ignores lainnya
 /storage/pail
