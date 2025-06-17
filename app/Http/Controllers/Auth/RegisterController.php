@@ -5,22 +5,14 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Page; // Diperlukan untuk layout
+use App\Models\Category; // Diperlukan untuk layout
 
 class RegisterController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Register Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles the registration of new users as well as their
-    | validation and creation. By default this controller uses a trait to
-    | provide this functionality without requiring any additional code.
-    |
-    */
-
     use RegistersUsers;
 
     /**
@@ -28,7 +20,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/home'; // Atau ke '/' jika Anda ingin ke homepage
 
     /**
      * Create a new controller instance.
@@ -37,7 +29,9 @@ class RegisterController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest');
+        // Hapus baris ini jika ada: $this->middleware('guest');
+        // Atau jika ada yang lain seperti $this->middleware('auth');
+        // Register dan Login seharusnya tidak punya middleware 'auth' di construct-nya
     }
 
     /**
@@ -67,6 +61,56 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            // Role default 'pembeli'
+            'role' => 'pembeli',
         ]);
+    }
+
+    // Metode untuk form register penjual
+    public function showPenjualForm()
+    {
+        $menu = Page::where(['is_group'=>0,'is_active'=>1])->get();
+        $submenu = Page::where(['is_group'=>1,'is_active'=>1])->get();
+        $categories = Category::all();
+        $appname = config('app.name');
+        return view('auth.register-penjual', compact('menu', 'submenu', 'categories', 'appname'));
+    }
+
+    public function registerPenjual(Request $request)
+    {
+        $this->validator($request->all())->validate();
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'penjual',
+        ]);
+        // Login user setelah registrasi (opsional)
+        auth()->login($user);
+        return redirect($this->redirectTo);
+    }
+
+    // Metode untuk form register pembeli
+    public function showPembeliForm()
+    {
+        $menu = Page::where(['is_group'=>0,'is_active'=>1])->get();
+        $submenu = Page::where(['is_group'=>1,'is_active'=>1])->get();
+        $categories = Category::all();
+        $appname = config('app.name');
+        return view('auth.register-pembeli', compact('menu', 'submenu', 'categories', 'appname'));
+    }
+
+    public function registerPembeli(Request $request)
+    {
+        $this->validator($request->all())->validate();
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'pembeli',
+        ]);
+        // Login user setelah registrasi (opsional)
+        auth()->login($user);
+        return redirect($this->redirectTo);
     }
 }
