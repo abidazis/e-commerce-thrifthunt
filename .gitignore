@@ -4,13 +4,16 @@
 /public/hot
 /public/storage # Ini mengabaikan symlink di public. Ini TIDAK MASALAH.
 
-# File dan folder dalam storage yang harus diabaikan, kecuali yang diizinkan
+# Aturan umum untuk mengabaikan konten folder storage/
 /storage/*
-!/storage/.gitkeep                  # <--- IZINKAN .gitkeep di root storage
-!/storage/app/                      # <--- IZINKAN FOLDER 'app' di dalam storage
-!/storage/app/public/               # <--- IZINKAN FOLDER 'public' di dalam storage/app
-/storage/app/public/* # <--- ABAIKAN SEMUA ISI DALAM storage/app/public
-!/storage/app/public/.gitkeep       # <--- PENTING: IZINKAN FILE .gitkeep di dalam storage/app/public
+!/storage/.gitkeep                  # Izinkan .gitkeep di root storage (jika ada)
+
+# Aturan spesifik untuk folder app/public di dalam storage/
+# Perhatikan urutannya: abaikan semua isi dulu, baru izinkan folder dan .gitkeep
+/storage/app/* # <--- Abaikan semua isi dalam storage/app (baru)
+!/storage/app/public/               # <--- Izinkan folder public di dalam storage/app (baru)
+/storage/app/public/* # <--- Abaikan semua isi dalam storage/app/public (baru)
+!/storage/app/public/.gitkeep       # <--- IZINKAN FILE .gitkeep di dalam storage/app/public (ini yang penting)
 
 # Default ignores lainnya
 /storage/pail
@@ -27,5 +30,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode # Jika ingin VS Code configs diabaikan, biarkan ini.
+/.vscode
 /.zed
