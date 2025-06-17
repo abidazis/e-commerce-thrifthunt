@@ -2,8 +2,17 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage
-/storage/*.key
+/public/storage # Ini mengabaikan symlink di public. Ini TIDAK MASALAH.
+
+# File dan folder dalam storage yang harus diabaikan, kecuali yang diizinkan
+/storage/*
+!/storage/.gitkeep                  # <--- IZINKAN .gitkeep di root storage
+!/storage/app/                      # <--- IZINKAN FOLDER 'app' di dalam storage
+!/storage/app/public/               # <--- IZINKAN FOLDER 'public' di dalam storage/app
+/storage/app/public/* # <--- ABAIKAN SEMUA ISI DALAM storage/app/public
+!/storage/app/public/.gitkeep       # <--- PENTING: IZINKAN FILE .gitkeep di dalam storage/app/public
+
+# Default ignores lainnya
 /storage/pail
 /vendor
 .env
@@ -13,11 +22,10 @@
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
-auth.json
 npm-debug.log
 yarn-error.log
 /.fleet
 /.idea
 /.nova
-/.vscode
+/.vscode # Jika ingin VS Code configs diabaikan, biarkan ini.
 /.zed
